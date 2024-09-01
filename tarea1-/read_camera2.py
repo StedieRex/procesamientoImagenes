@@ -3,6 +3,8 @@ import argparse
 import matplotlib.pyplot as plt
 from matplotlib.widgets import Slider, Button
 import json
+from tkinter import Tk
+from tkinter.filedialog import askopenfilename
 
 def camara():
     # Valores iniciales para HSV
@@ -37,24 +39,32 @@ def camara():
 
     def cargar_valores(event):
         nonlocal h_min, h_max, s_min, s_max, v_min, v_max
-        try:
-            with open('hsv_values.txt', 'r') as file:
-                valores_hsv = json.load(file)
-            h_min = valores_hsv['h_min']
-            h_max = valores_hsv['h_max']
-            s_min = valores_hsv['s_min']
-            s_max = valores_hsv['s_max']
-            v_min = valores_hsv['v_min']
-            v_max = valores_hsv['v_max']
-            hmin.set_val(h_min)
-            hmax.set_val(h_max)
-            smin.set_val(s_min)
-            smax.set_val(s_max)
-            vmin.set_val(v_min)
-            vmax.set_val(v_max)
-            print("Valores HSV cargados.")
-        except FileNotFoundError:
-            print("No se encontró un archivo de valores HSV guardados.")
+        
+        # Abrir el cuadro de diálogo para seleccionar archivo
+        Tk().withdraw()  # Ocultar la ventana principal de tkinter
+        file_path = askopenfilename(filetypes=[("Text files", "*.txt")])
+        
+        if file_path:
+            try:
+                with open(file_path, 'r') as file:
+                    valores_hsv = json.load(file)
+                h_min = valores_hsv['h_min']
+                h_max = valores_hsv['h_max']
+                s_min = valores_hsv['s_min']
+                s_max = valores_hsv['s_max']
+                v_min = valores_hsv['v_min']
+                v_max = valores_hsv['v_max']
+                hmin.set_val(h_min)
+                hmax.set_val(h_max)
+                smin.set_val(s_min)
+                smax.set_val(s_max)
+                vmin.set_val(v_min)
+                vmax.set_val(v_max)
+                print("Valores HSV cargados.")
+            except FileNotFoundError:
+                print("No se encontró el archivo seleccionado.")
+        else:
+            print("Carga de archivo cancelada.")
 
     # Configuración del ArgumentParser
     parser = argparse.ArgumentParser()
