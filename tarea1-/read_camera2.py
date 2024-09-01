@@ -7,20 +7,20 @@ import json
 def camara():
     # Valores iniciales para HSV
     h_min = 0
-    h_max = 179
-    s_min = 0
-    s_max = 255
-    v_min = 0
-    v_max = 255
+    h_max = 360
+    s_min = 0.0
+    s_max = 1.0
+    v_min = 0.0
+    v_max = 1.0
     
     def update(val):
         nonlocal h_min, h_max, s_min, s_max, v_min, v_max
         h_min = int(hmin.val)
         h_max = int(hmax.val)
-        s_min = int(smin.val)
-        s_max = int(smax.val)
-        v_min = int(vmin.val)
-        v_max = int(vmax.val)
+        s_min = smin.val
+        s_max = smax.val
+        v_min = vmin.val
+        v_max = vmax.val
 
     def guardar_valores(event):
         valores_hsv = {
@@ -81,12 +81,12 @@ def camara():
     axvmin = plt.axes([0.25, 0.1, 0.65, 0.03], figure=fig)
     axvmax = plt.axes([0.25, 0.05, 0.65, 0.03], figure=fig)
     
-    hmin = Slider(axhmin, 'H min', 0, 179, valinit=h_min)
-    hmax = Slider(axhmax, 'H max', 0, 179, valinit=h_max)
-    smin = Slider(axsmin, 'S min', 0, 255, valinit=s_min)
-    smax = Slider(axsmax, 'S max', 0, 255, valinit=s_max)
-    vmin = Slider(axvmin, 'V min', 0, 255, valinit=v_min)
-    vmax = Slider(axvmax, 'V max', 0, 255, valinit=v_max)
+    hmin = Slider(axhmin, 'H min', 0, 360, valinit=h_min)
+    hmax = Slider(axhmax, 'H max', 0, 360, valinit=h_max)
+    smin = Slider(axsmin, 'S min', 0, 1, valinit=s_min)
+    smax = Slider(axsmax, 'S max', 0, 1, valinit=s_max)
+    vmin = Slider(axvmin, 'V min', 0, 1, valinit=v_min)
+    vmax = Slider(axvmax, 'V max', 0, 1, valinit=v_max)
 
     hmin.on_changed(update)
     hmax.on_changed(update)
@@ -114,7 +114,16 @@ def camara():
         if ret:
             frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             hsv = cv2.cvtColor(frame_rgb, cv2.COLOR_RGB2HSV)
-            mascara = cv2.inRange(hsv, (h_min, s_min, v_min), (h_max, s_max, v_max))
+            
+            # Convertir los valores H, S, V a los rangos de OpenCV
+            h_min_opencv = int(h_min / 2)#limites de h es hasta 180 y no 360, por eso se divide entre 2
+            h_max_opencv = int(h_max / 2)
+            s_min_opencv = int(s_min * 255)# esta es una division simple 255=100% y 1=100% -> 1*255=255
+            s_max_opencv = int(s_max * 255)
+            v_min_opencv = int(v_min * 255)
+            v_max_opencv = int(v_max * 255)
+
+            mascara = cv2.inRange(hsv, (h_min_opencv, s_min_opencv, v_min_opencv), (h_max_opencv, s_max_opencv, v_max_opencv))
             result = cv2.bitwise_and(frame_rgb, frame_rgb, mask=mascara)
 
             # Actualizar la cámara con enmascaramiento
@@ -129,7 +138,6 @@ def camara():
             plt.pause(0.01)
 
             if cv2.waitKey(1) & 0xFF == ord('q'):
-                print("Saliendo...")
                 break
         else:
             break
